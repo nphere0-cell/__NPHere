@@ -1,0 +1,12 @@
+/* src/index.css me add karo */
+.bg-animated {
+  background: linear-gradient(-45deg, #6366f1, #8b5cf6, #ec4899, #3b82f6);
+  background-size: 400% 400%;
+  animation: gradientMove 12s ease infinite;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
