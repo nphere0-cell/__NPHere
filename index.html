@@ -517,3 +517,16 @@
     <p>© 2025 NPHere – All Rights Reserved</p>
   </div>
 </footer>
+<form id="paytmForm" method="post" action="https://securegw-stage.paytm.in/order/process">
+  <!-- The Paytm endpoint might differ for production vs staging -->
+  <input type="hidden" name="MID" value="">
+  <input type="hidden" name="ORDER_ID" value="">
+  <input type="hidden" name="CUST_ID" value="">
+  <input type="hidden" name="TXN_AMOUNT" value="">
+  <input type="hidden" name="WEBSITE" value="">
+  <input type="hidden" name="CHANNEL_ID" value="">
+  <input type="hidden" name="INDUSTRY_TYPE_ID" value="">
+  <input type="hidden" name="CALLBACK_URL" value="">
+  <input type="hidden" name="CHECKSUMHASH" value="">
+  <button type="submit">Pay Now</button>
+</form>
