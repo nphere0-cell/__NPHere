@@ -111,3 +111,83 @@ document.querySelectorAll('.social-icons a').forEach(icon => {
     icon.style.transform = 'rotate(0) scale(1)';
   });
 });
+// server.js or app.js
+const express = require("express");
+const bodyParser = require("body-parser");
+const path = require("path");
+const paytm = require("paytmchecksum"); // Paytm official checksum library
+
+const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// Replace with your Paytm credentials
+const MID = "YOUR_MID_HERE";
+const MERCHANT_KEY = "YOUR_MERCHANT_KEY_HERE";
+const WEBSITE = "WEBSTAGING"; // or "WEB"
+const CHANNEL_ID = "WEB";
+const INDUSTRY_TYPE_ID = "Retail";
+const CALLBACK_URL = "https://yourdomain.com/callback";  // callback endpoint
+
+// Route to initiate transaction
+app.post("/api/paytm/initiate", async (req, res) => {
+  const { orderId, amount, customerId } = req.body;
+
+  // Prepare parameters
+  let paytmParams = {};
+  paytmParams["MID"] = MID;
+  paytmParams["WEBSITE"] = WEBSITE;
+  paytmParams["CHANNEL_ID"] = CHANNEL_ID;
+  paytmParams["INDUSTRY_TYPE_ID"] = INDUSTRY_TYPE_ID;
+  paytmParams["ORDER_ID"] = orderId;
+  paytmParams["CUST_ID"] = customerId;
+  paytmParams["TXN_AMOUNT"] = amount.toString();
+  paytmParams["CALLBACK_URL"] = CALLBACK_URL;
+
+  // You can add more parameters like mobile, email etc.
+
+  try {
+    // Generate checksum
+    const checksum = await paytm.generateSignature(
+      paytmParams,
+      MERCHANT_KEY
+    );
+
+    const paramsWithChecksum = {
+      ...paytmParams,
+      CHECKSUMHASH: checksum,
+    };
+
+    // Send these params to client to submit form to Paytm
+    res.json(paramsWithChecksum);
+  } catch (err) {
+    console.error("Checksum error:", err);
+    res.status(500).send("Error in initiating transaction");
+  }
+});
+
+// Callback route to handle Paytm response
+app.post("/callback", async (req, res) => {
+  const receivedParams = req.body;
+  const paytmChecksum = receivedParams.CHECKSUMHASH;
+  delete receivedParams.CHECKSUMHASH;
+
+  const isValid = await paytm.verifySignature(
+    receivedParams,
+    MERCHANT_KEY,
+    paytmChecksum
+  );
+
+  if (isValid) {
+    // Check transaction status via Paytm Transaction Status API optionally
+    // Then respond / show success page
+    res.send("Payment Successful and checksum valid");
+  } else {
+    res.status(400).send("Checksum mismatch or invalid response");
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});
